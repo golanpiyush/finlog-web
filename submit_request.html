@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<meta name="description" content="Tankly Feedback — Submit a feature request, improvement, or bug report."/>
-<title>Tankly — Feedback Portal</title>
+<meta name="description" content="FinLog Feedback — Submit a feature request, improvement, or bug report."/>
+<title>FinLog — Feedback Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cabin:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600;1,700&display=swap" rel="stylesheet"/>
@@ -177,15 +177,15 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
 </div>
 
 <nav id="nav" role="navigation" aria-label="Main navigation">
-  <a class="nav-brand" href="index.html" aria-label="Tankly home">
+  <a class="nav-brand" href="index.html" aria-label="FinLog home">
     <div class="nav-logo" aria-hidden="true">🐠</div>
-    <span class="nav-wordmark">Tankly</span>
+    <span class="nav-wordmark">FinLog</span>
   </a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link" href="index.html#features">Features</a>
-    <a class="nav-link" href="tankly-privacy">Privacy</a>
-    <a class="nav-link" href="tankly-tos">Terms</a>
-    <a class="nav-cta" href="index.html">← Back to Tankly</a>
+    <a class="nav-link" href="FinLog-privacy">Privacy</a>
+    <a class="nav-link" href="FinLog-tos">Terms</a>
+    <a class="nav-cta" href="index.html">← Back to FinLog</a>
   </div>
   <button class="nav-hamburger" id="hamburgerBtn" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
     <span></span><span></span><span></span>
@@ -194,9 +194,9 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
 
 <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation" aria-hidden="true">
   <a href="index.html#features">Features</a>
-  <a href="tankly-privacy">Privacy</a>
-  <a href="tankly-tos">Terms</a>
-  <a href="index.html">← Back to Tankly</a>
+  <a href="FinLog-privacy">Privacy</a>
+  <a href="FinLog-tos">Terms</a>
+  <a href="index.html">← Back to FinLog</a>
 </div>
 
 <div class="page">
@@ -206,7 +206,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
       <div class="brand-row">
         <div class="brand-icon" aria-hidden="true">🐠</div>
         <div>
-          <div class="brand-name">Tankly</div>
+          <div class="brand-name">FinLog</div>
           <div class="brand-sub">Feedback Portal</div>
         </div>
       </div>
@@ -222,7 +222,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
       </div>
       <div class="user-version" id="chipVersion">—</div>
     </div>
-    <div class="anon-notice" id="anonNotice">Sign in to Tankly for your account details to appear automatically.</div>
+    <div class="anon-notice" id="anonNotice">Sign in to FinLog for your account details to appear automatically.</div>
 
     <!-- Type selector -->
     <div class="type-row js-fade" id="typeSelector" data-delay="140" role="group" aria-label="Feedback type">
@@ -259,10 +259,10 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
 
 <footer>
   <div class="footer-inner">
-    <span>© 2026 Tankly · Piyush Golan</span>
+    <span>© 2026 FinLog · Piyush Golan</span>
     <div class="footer-links">
-      <a href="tankly-privacy">Privacy</a>
-      <a href="tankly-tos">Terms</a>
+      <a href="FinLog-privacy">Privacy</a>
+      <a href="FinLog-tos">Terms</a>
       <a href="mailto:golanlabs.apps@gmail.com">Contact</a>
     </div>
   </div>
@@ -308,7 +308,7 @@ const SB_ANON = '__SUPABASE_ANON_KEY__';
   setTimeout(()=>{
     chip.classList.remove('loading');
     if(USER_NAME||USER_EMAIL){
-      chipName.textContent=USER_NAME||'Tankly User';
+      chipName.textContent=USER_NAME||'FinLog User';
       chipMeta.textContent=USER_EMAIL||(FIREBASE_UID?`uid: ${FIREBASE_UID.slice(0,14)}…`:'—');
       chipVersion.textContent=APP_VERSION?`v${APP_VERSION}`:'—';
     }else{
@@ -378,7 +378,7 @@ const SB_ANON = '__SUPABASE_ANON_KEY__';
       console.warn('Edge fn failed, falling back to mailto:',err);
       const flairMap={feature:['💡','Feature Request'],improvement:['🔧','Improvement'],bug:['🐛','Bug Report']};
       const [em,label]=flairMap[type]||flairMap.feature;
-      const subject=encodeURIComponent(`[Tankly] ${em} ${label} — ${USER_NAME||'User'}`);
+      const subject=encodeURIComponent(`[FinLog] ${em} ${label} — ${USER_NAME||'User'}`);
       const body=encodeURIComponent(`${em} ${label}\n\n${details}\n\n---\nName: ${USER_NAME||'N/A'}\nEmail: ${USER_EMAIL||'N/A'}\nFirebase UID: ${FIREBASE_UID||'N/A'}\nSupabase UID: ${SUPABASE_UID||'N/A'}\nVersion: ${APP_VERSION||'N/A'}\nDevice: ${DEVICE_ID||'N/A'}`);
       window.open(`mailto:golanlabs.apps@gmail.com?subject=${subject}&body=${body}`,'_blank');
       showMsg('📬 Email client opened — please send the draft to complete your submission.','ok');
