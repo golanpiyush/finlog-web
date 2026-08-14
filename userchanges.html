@@ -183,7 +183,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
   </a>
   <div class="nav-links" id="navLinks">
     <a class="nav-link" href="index.html#features">Features</a>
-    <a class="nav-link" href="privacy_policy">Privacy</a>
+    <a class="nav-link" href="privacy-policy">Privacy</a>
     <a class="nav-link" href="terms-of-service">Terms</a>
     <a class="nav-cta" href="index.html">← Back to FinLog</a>
   </div>
@@ -194,7 +194,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
 
 <div class="mobile-menu" id="mobileMenu" role="dialog" aria-label="Mobile navigation" aria-hidden="true">
   <a href="index.html#features">Features</a>
-  <a href="privacy_policy">Privacy</a>
+  <a href="privacy-policy">Privacy</a>
   <a href="terms-of-service">Terms</a>
   <a href="index.html">← Back to FinLog</a>
 </div>
@@ -261,7 +261,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--edge2);padding:1.6
   <div class="footer-inner">
     <span>© 2026 FinLog · Piyush Golan</span>
     <div class="footer-links">
-      <a href="privacy_policy.html">Privacy</a>
+      <a href="privacy-policy.html">Privacy</a>
       <a href="terms-of-service.html">Terms</a>
       <a href="mailto:golanlabs.apps@gmail.com">Contact</a>
     </div>
@@ -351,6 +351,7 @@ const SB_ANON = '__SUPABASE_ANON_KEY__';
   const form=document.getElementById('requestForm');
   const btnSpinner=document.getElementById('btnSpinner');
   const msgBox=document.getElementById('msgBox');
+  const GMAIL_ADDRESS = 'golanlabs.apps@gmail.com';
 
   form.addEventListener('submit',async e=>{
     e.preventDefault();
@@ -362,31 +363,99 @@ const SB_ANON = '__SUPABASE_ANON_KEY__';
     msgBox.className='msg-box';msgBox.style.display='none';
 
     try{
+      // Try Supabase first if configured
       if(SB_URL&&!SB_URL.includes('__')){
-        const res=await fetch(`${SB_URL}/functions/v1/send-feedback`,{
-          method:'POST',
-          headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':`Bearer ${SB_ANON}`},
-          body:JSON.stringify({type,details,user_name:USER_NAME,user_email:USER_EMAIL,firebase_uid:FIREBASE_UID,supabase_uid:SUPABASE_UID,app_version:APP_VERSION,device_id:DEVICE_ID}),
-        });
-        if(!res.ok)throw new Error(`HTTP ${res.status}`);
-        showMsg('✅ Sent! We\'ll review your request soon. Thank you 🐠','ok');
-        detailsTA.value='';
-      }else{
-        throw new Error('No Supabase configured');
+        try {
+          const res=await fetch(`${SB_URL}/functions/v1/send-feedback`,{
+            method:'POST',
+            headers:{'Content-Type':'application/json','apikey':SB_ANON,'Authorization':`Bearer ${SB_ANON}`},
+            body:JSON.stringify({type,details,user_name:USER_NAME,user_email:USER_EMAIL,firebase_uid:FIREBASE_UID,supabase_uid:SUPABASE_UID,app_version:APP_VERSION,device_id:DEVICE_ID}),
+          });
+          if(!res.ok)throw new Error(`HTTP ${res.status}`);
+          showMsg('✅ Sent! We\'ll review your request soon. Thank you 🐠','ok');
+          detailsTA.value='';
+          return; // Success, exit
+        } catch(supabaseError) {
+          console.warn('Supabase failed, falling back to Gmail:', supabaseError);
+        }
       }
+      
+      // Open Gmail app or email client
+      openGmailCompose(type, details);
+      
     }catch(err){
-      console.warn('Edge fn failed, falling back to mailto:',err);
-      const flairMap={feature:['💡','Feature Request'],improvement:['🔧','Improvement'],bug:['🐛','Bug Report']};
-      const [em,label]=flairMap[type]||flairMap.feature;
-      const subject=encodeURIComponent(`[FinLog] ${em} ${label} — ${USER_NAME||'User'}`);
-      const body=encodeURIComponent(`${em} ${label}\n\n${details}\n\n---\nName: ${USER_NAME||'N/A'}\nEmail: ${USER_EMAIL||'N/A'}\nFirebase UID: ${FIREBASE_UID||'N/A'}\nSupabase UID: ${SUPABASE_UID||'N/A'}\nVersion: ${APP_VERSION||'N/A'}\nDevice: ${DEVICE_ID||'N/A'}`);
-      window.open(`mailto:golanlabs.apps@gmail.com?subject=${subject}&body=${body}`,'_blank');
-      showMsg('📬 Email client opened — please send the draft to complete your submission.','ok');
-      detailsTA.value='';
+      console.warn('Error submitting feedback:',err);
+      // Final fallback to Gmail
+      openGmailCompose(type, details);
     }finally{
       submitBtnText.style.opacity='1';btnSpinner.style.display='none';submitBtn.disabled=false;
     }
   });
+
+  function openGmailCompose(type, details) {
+    const flairMap={feature:['💡','Feature Request'],improvement:['🔧','Improvement'],bug:['🐛','Bug Report']};
+    const [em,label]=flairMap[type]||flairMap.feature;
+    
+    // Build email subject and body
+    const subject = `[FinLog] ${em} ${label} — ${USER_NAME||'User'}`;
+    const bodyLines = [
+      `${em} ${label}`,
+      '',
+      details,
+      '',
+      '---',
+      `Name: ${USER_NAME||'N/A'}`,
+      `Email: ${USER_EMAIL||'N/A'}`,
+      `Firebase UID: ${FIREBASE_UID||'N/A'}`,
+      `Supabase UID: ${SUPABASE_UID||'N/A'}`,
+      `Version: ${APP_VERSION||'N/A'}`,
+      `Device: ${DEVICE_ID||'N/A'}`,
+      '',
+      'Sent from FinLog Feedback Portal'
+    ];
+    
+    const body = bodyLines.join('\n');
+    
+    // Try to open Gmail app first (works on mobile)
+    const gmailUrl = `googlegmail://co?to=${GMAIL_ADDRESS}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Create hidden iframe for mobile app detection
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    let appOpened = false;
+    
+    // Try to open Gmail app
+    try {
+      iframe.contentWindow.location.href = gmailUrl;
+      appOpened = true;
+    } catch(e) {
+      // Iframe navigation failed, try direct location
+      try {
+        window.location.href = gmailUrl;
+        appOpened = true;
+      } catch(e2) {
+        appOpened = false;
+      }
+    }
+    
+    // If Gmail app doesn't open, fall back to mailto
+    if (!appOpened) {
+      setTimeout(() => {
+        const mailtoUrl = `mailto:${GMAIL_ADDRESS}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = mailtoUrl;
+      }, 100);
+    }
+    
+    // Clean up iframe
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+    
+    showMsg('📧 Opening Gmail — please send the draft to complete your submission.','ok');
+    detailsTA.value='';
+  }
 
   function showMsg(text,type){
     msgBox.textContent=text;msgBox.className=`msg-box ${type}`;
